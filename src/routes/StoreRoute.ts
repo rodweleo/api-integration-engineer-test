@@ -9,11 +9,159 @@ const StoreRoute = express.Router();
 const storeService = new StoreService();
 const logService = new LogService();
 
+// Get all stores
 StoreRoute.get("/stores/all", async (req, res) => {
-  const stores = await storeService.getAllStores();
+  try {
+    const stores = await storeService.getAllStores();
 
-  res.status(200).json(stores);
+    if (!stores) {
+      return res.status(200).json([]);
+    }
+
+    res.status(200).json(stores);
+  } catch (error: any) {
+    res.status(500).json({
+      requestId: generateRequestId(),
+      errorCode: "50XY",
+      Description: error.message || "Internal server error",
+    });
+  }
 });
+
+// Get store by ID
+StoreRoute.get("/stores/:storeID", async (req, res) => {
+  const { storeID } = req.params;
+
+  try {
+    const { data, error } = await storeService.getStoreById(storeID);
+
+    if (error || !data) {
+      return res.status(404).json({
+        requestId: generateRequestId(),
+        errorCode: "44XY",
+        Description: "Store not found",
+      });
+    }
+
+    res.status(200).json(data);
+  } catch (error: any) {
+    res.status(500).json({
+      requestId: generateRequestId(),
+      errorCode: "50XY",
+      Description: error.message || "Internal server error",
+    });
+  }
+});
+
+// Get all items for a store
+StoreRoute.get("/stores/:storeID/items", async (req, res) => {
+  const { storeID } = req.params;
+
+  try {
+    // First check if store exists
+    const { data: storeData, error: storeError } =
+      await storeService.getStoreById(storeID);
+
+    if (storeError || !storeData) {
+      return res.status(404).json({
+        requestId: generateRequestId(),
+        errorCode: "44XY",
+        Description: "Store not found",
+      });
+    }
+
+    // Get items for the store
+    const { data: items, error: itemsError } =
+      await storeService.getItemsByStoreId(storeID);
+
+    if (itemsError) {
+      return res.status(500).json({
+        requestId: generateRequestId(),
+        errorCode: "50XY",
+        Description: itemsError.message,
+      });
+    }
+
+    res.status(200).json(items || []);
+  } catch (error: any) {
+    res.status(500).json({
+      requestId: generateRequestId(),
+      errorCode: "50XY",
+      Description: error.message || "Internal server error",
+    });
+  }
+});
+
+// Delete an item from a store
+StoreRoute.delete("/stores/:storeID/items/:itemCode", async (req, res) => {
+  const { storeID, itemCode } = req.params;
+
+  try {
+    // First check if store exists
+    const { data: storeData, error: storeError } =
+      await storeService.getStoreById(storeID);
+
+    if (storeError || !storeData) {
+      return res.status(404).json({
+        requestId: generateRequestId(),
+        errorCode: "44XY",
+        Description: "Store not found",
+      });
+    }
+
+    // Check if item exists and belongs to the store
+    const { data: itemData, error: itemError } = await storeService.getItemById(
+      itemCode
+    );
+
+    if (itemError || !itemData) {
+      return res.status(404).json({
+        requestId: generateRequestId(),
+        errorCode: "44XY",
+        Description: "Item not found",
+      });
+    }
+
+    if (itemData.store_id !== storeID) {
+      return res.status(404).json({
+        requestId: generateRequestId(),
+        errorCode: "44XY",
+        Description: "Item not found in this store",
+      });
+    }
+
+    // Delete the item
+    const { error: deleteError } = await storeService.deleteItem(itemCode);
+
+    if (deleteError) {
+      return res.status(500).json({
+        requestId: generateRequestId(),
+        errorCode: "50XY",
+        Description: deleteError.message,
+      });
+    }
+
+    res.status(204).send();
+  } catch (error: any) {
+    res.status(500).json({
+      requestId: generateRequestId(),
+      errorCode: "50XY",
+      Description: error.message || "Internal server error",
+    });
+  }
+});
+
+// Handle unsupported methods for the postitem endpoint
+StoreRoute.all("/:storeID/postitem", (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      requestId: req.body?.requestId || "unknown",
+      errorCode: "45XY",
+      Description: "method not allowed",
+    });
+  }
+});
+
 StoreRoute.post("/:storeID/postitem", async (req, res) => {
   const { storeID } = req.params;
   const { requestId } = req.body;
@@ -22,8 +170,8 @@ StoreRoute.post("/:storeID/postitem", async (req, res) => {
   if (requestIdDetails.data) {
     return res.status(503).json({
       requestId: requestId,
-      errorCode: "503",
-      errorDescription: "duplicate requestID",
+      errorCode: "53QW",
+      Description: "duplicate requestID",
     });
   }
 
@@ -33,7 +181,7 @@ StoreRoute.post("/:storeID/postitem", async (req, res) => {
   if (!storeRes.data) {
     return res.status(404).json({
       requestId: requestId,
-      errorCode: "400",
+      errorCode: "44XY",
       Description: `Store with ID ${storeID} not found`,
     });
   }
@@ -68,7 +216,8 @@ StoreRoute.post("/:storeID/postitem", async (req, res) => {
 
     return res.status(201).json({
       requestId,
-      ...data,
+      itemCode: data.itemCode,
+      Description: data.message,
     });
   } catch (e: any) {
     return res.status(500).json({

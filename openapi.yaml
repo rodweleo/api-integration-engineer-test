@@ -1,0 +1,386 @@
+openapi: 3.0.0
+info:
+  title: Store API
+  description: API for managing store items
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@teststore.com
+
+servers:
+  - url: https://teststore.com/v1
+    description: Production server
+  - url: http://localhost:3000/v3
+    description: Development server
+
+paths:
+  /stores/all:
+    get:
+      summary: Get all stores
+      description: Retrieves a list of all available stores
+      operationId: getAllStores
+      responses:
+        "200":
+          description: List of stores retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Store"
+              example:
+                - id: "uuid"
+                  name: "Fashion Store"
+                  created_at: "2024-01-01T00:00:00Z"
+                - id: "store2"
+                  name: "Electronics Store"
+                  created_at: "2024-01-02T00:00:00Z"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stores/{storeID}:
+    get:
+      summary: Get store by ID
+      description: Retrieves information about a specific store
+      operationId: getStoreById
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: Unique identifier for the store
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Store information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Store"
+              example:
+                id: "store1"
+                name: "Fashion Store"
+                created_at: "2024-01-01T00:00:00Z"
+        "404":
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "auto-generated"
+                errorCode: "44XY"
+                Description: "Store not found"
+
+  /stores/{storeID}/items:
+    get:
+      summary: Get all items for a store
+      description: Retrieves all items in a specific store
+      operationId: getStoreItems
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: Unique identifier for the store
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Items retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StoreItem"
+              example:
+                - id: "item1"
+                  item: "Denim jeans"
+                  size: "32"
+                  description: "A pair of denim jeans size 32 for men"
+                  tags: ["trendy", "male", "blue"]
+                  onOffer: true
+                  Price: "1000"
+                  discount: 0
+                  store_id: "store1"
+                  created_at: "2024-01-01T00:00:00Z"
+        "404":
+          description: Store not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stores/{storeID}/items/{itemCode}:
+    delete:
+      summary: Delete an item from a store
+      description: Removes a specific item from a store
+      operationId: deleteStoreItem
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: Unique identifier for the store
+          schema:
+            type: string
+        - name: itemCode
+          in: path
+          required: true
+          description: Unique identifier for the item
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Item deleted successfully
+        "404":
+          description: Store or item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "auto-generated"
+                errorCode: "44XY"
+                Description: "Item not found"
+
+  /{storeID}/postitem:
+    post:
+      summary: Add an item to a store
+      description: Creates a new item in the specified store
+      operationId: postItem
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: Unique identifier for the store
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostItemRequest"
+            example:
+              requestId: "dfdfa124ae"
+              item: "Denim jeans"
+              size: "32"
+              description: "A pair of denim jeans size 32 for men"
+              tags: ["trendy", "male", "blue", "32", "denim"]
+              onOffer: true
+              Price: "1000"
+              discount: 0
+      responses:
+        "201":
+          description: Item created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                requestId: "dfdfa124ae"
+                itemCode: "1234sdsfrer"
+                Description: "item created successfully"
+        "400":
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "dfdfa124ae"
+                errorCode: "04XY"
+                Description: "missing field xyz"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "dfdfa124ae"
+                errorCode: "44XY"
+                Description: "resource not found"
+        "405":
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "dfdfa124ae"
+                errorCode: "45XY"
+                Description: "method not allowed"
+        "503":
+          description: Service unavailable - duplicate requestID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "fdfa132as"
+                errorCode: "53QW"
+                Description: "duplicate requestID"
+
+components:
+  schemas:
+    Store:
+      type: object
+      required:
+        - id
+        - name
+        - created_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the store
+          example: "store1"
+        name:
+          type: string
+          description: Name of the store
+          example: "Fashion Store"
+        created_at:
+          type: string
+          format: date-time
+          description: When the store was created
+          example: "2024-01-01T00:00:00Z"
+
+    StoreItem:
+      type: object
+      required:
+        - id
+        - item
+        - size
+        - onOffer
+        - Price
+        - discount
+        - store_id
+        - created_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the item
+          example: "item1"
+        item:
+          type: string
+          description: Name of the item
+          example: "Denim jeans"
+        size:
+          type: string
+          description: Size of the item
+          example: "32"
+        description:
+          type: string
+          description: Description of the item
+          example: "A pair of denim jeans size 32 for men"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags associated with the item
+          example: ["trendy", "male", "blue"]
+        onOffer:
+          type: boolean
+          description: Whether the item is on offer
+          example: true
+        Price:
+          type: string
+          description: Price of the item
+          example: "1000"
+        discount:
+          type: number
+          description: Discount amount
+          example: 0
+        store_id:
+          type: string
+          description: ID of the store this item belongs to
+          example: "store1"
+        created_at:
+          type: string
+          format: date-time
+          description: When the item was created
+          example: "2024-01-01T00:00:00Z"
+
+    PostItemRequest:
+      type: object
+      required:
+        - requestId
+        - item
+        - size
+        - onOffer
+        - Price
+        - discount
+      properties:
+        requestId:
+          type: string
+          description: Uniquely identifies each API request
+          example: "dfdfa124ae"
+        item:
+          type: string
+          description: Item being added to the store
+          example: "Denim jeans"
+        size:
+          type: string
+          description: Size description of size eg large
+          example: "32"
+        description:
+          type: string
+          description: Elaboration on item added
+          example: "A pair of denim jeans size 32 for men"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Search terms to be associated with item
+          example: ["trendy", "male", "blue", "32", "denim"]
+        onOffer:
+          type: boolean
+          description: True if a discount exists and false otherwise
+          example: true
+        Price:
+          type: string
+          description: Price of the item
+          example: "1000"
+        discount:
+          type: number
+          format: float
+          description: Discount amount
+          example: 0
+
+    SuccessResponse:
+      type: object
+      required:
+        - requestId
+        - itemCode
+        - Description
+      properties:
+        requestId:
+          type: string
+          description: Uniquely identifies each API request
+        itemCode:
+          type: string
+          description: Alphanumeric string representing the item created
+        Description:
+          type: string
+          description: An explanation of operation
+
+    ErrorResponse:
+      type: object
+      required:
+        - requestId
+        - errorCode
+        - Description
+      properties:
+        requestId:
+          type: string
+          description: Uniquely identifies each API request
+        errorCode:
+          type: string
+          description: A code that is mapped to an error in the backend
+        Description:
+          type: string
+          description: An explanation of operation or error encountered
