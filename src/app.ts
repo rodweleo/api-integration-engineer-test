@@ -1,11 +1,20 @@
 import express from "express";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import StoreRoute from "./routes/StoreRoute";
+import dotenv from "dotenv";
+
+const envFile = `.env.${process.env.NODE_ENV || "development"}`;
+dotenv.config({ path: envFile });
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
-// Serve Swagger UI with your OpenAPI spec
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -16,13 +25,12 @@ app.use(
   })
 );
 
-// Serve the OpenAPI spec file
 app.use("/openapi.yaml", express.static("./openapi.yaml"));
 
 // API routes
-app.use("/v3", StoreRoute);
+app.use("/v1", StoreRoute);
 
 app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-  console.log("Swagger UI available at: http://localhost:3000/api-docs");
+  console.log(`Server is running on port ${process.env.PORT}`);
+  console.log(`Swagger UI available at endpoint /api-docs`);
 });

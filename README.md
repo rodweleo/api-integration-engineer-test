@@ -176,7 +176,7 @@ The API uses standardized error codes and response formats:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/rodweleo/api-integration-engineer-test.git
 cd api-integration-engineer-test
 ```
 

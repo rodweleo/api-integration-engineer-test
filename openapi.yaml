@@ -5,12 +5,12 @@ info:
   version: 1.0.0
   contact:
     name: API Support
-    email: support@teststore.com
+    email: leorodwel86@gmail.com
 
 servers:
   - url: https://teststore.com/v1
     description: Production server
-  - url: http://localhost:3000/v3
+  - url: http://localhost:3000/v1
     description: Development server
 
 paths:
