@@ -13,3 +13,10 @@ export const itemSchema = z.object({
   }, z.number().positive("Price must be a positive number")),
   discount: z.number().min(0, "Missing field 'discount'"),
 });
+
+export const createStoreSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Store name is required")
+    .max(100, "Store name must be less than 100 characters"),
+});

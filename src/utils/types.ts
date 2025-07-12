@@ -20,6 +20,10 @@ export type PostItemRequest = {
   storeId: string;
 };
 
+export type CreateStoreRequest = {
+  name: string;
+};
+
 export type Store = {
   id: string;
   name: string;

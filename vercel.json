@@ -1,20 +1,22 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "src/app.ts",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": [
-                    "dist/**"
-                ]
-            }
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "src/app.ts"
-        }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/app.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["dist/**", "openapi.yaml"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/openapi.yaml",
+      "dest": "openapi.yaml"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/app.ts"
+    }
+  ]
 }

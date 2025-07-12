@@ -2,9 +2,31 @@
 
 A comprehensive REST API for managing store items and stores, built with Node.js, TypeScript, and Express. This project implements a complete API following OpenAPI V3 specification with full CRUD operations for stores and items.
 
-## 🚀 Features
+## 🌐 Live API
+
+**The API is now live and ready for use!**
+
+- **Production API**: https://uat-teststore.vercel.app/v1/{endpoint}
+- **Interactive Documentation**: https://uat-teststore.vercel.app/api-docs
+
+### Quick Start
+
+Test the live API immediately:
+
+```bash
+# Get all stores
+curl -X GET https://uat-teststore.vercel.app/v1/stores/all
+
+# Create a new store
+curl -X POST https://uat-teststore.vercel.app/v1/stores/create \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Test Store"}'
+```
+
+## Features
 
 - **Complete CRUD Operations**: Create, read, and delete operations for stores and items
+- **Store Management**: Create new stores with validation and duplicate prevention
 - **Request Validation**: Robust validation using Zod schemas
 - **Duplicate Request Detection**: Prevents duplicate submissions using request ID tracking
 - **Standardized Error Handling**: Consistent error codes and response formats
@@ -12,14 +34,56 @@ A comprehensive REST API for managing store items and stores, built with Node.js
 - **TypeScript Support**: Full type safety and IntelliSense
 - **Database Integration**: Supabase backend with PostgreSQL
 - **Request Logging**: Comprehensive request tracking and logging
+- **Production Ready**: Deployed on Vercel with automatic scaling
 
-## 📚 API Endpoints
+## API Endpoints
+
+### Base URL
+
+- **Production**: `https://uat-teststore.vercel.app/v1`
+- **Development**: `http://localhost:3000/v1`
 
 ### Store Management
 
-#### GET `/v1/stores/all`
+#### POST `/stores/create`
+
+Creates a new store in the system.
+
+**Production URL**: `https://uat-teststore.vercel.app/v1/stores/create`
+
+**Request Body:**
+
+```json
+{
+  "name": "Fashion Store"
+}
+```
+
+**Required Fields:**
+
+- `name`: Name of the store (1-100 characters)
+
+**Success Response (201):**
+
+```json
+{
+  "requestId": "uuid-generated",
+  "storeId": "store_1703123456789_abc123def",
+  "Description": "Store created successfully"
+}
+```
+
+**Error Responses:**
+
+- **400**: Malformed request (missing or invalid store name)
+- **409**: Store name already exists
+- **500**: Internal server error
+
+#### GET `/stores/all`
 
 Retrieves a list of all available stores.
+
+**Production URL**: `https://uat-teststore.vercel.app/v1/stores/all`
 
 **Response:**
 
@@ -33,9 +97,11 @@ Retrieves a list of all available stores.
 ]
 ```
 
-#### GET `/v1/stores/{storeID}`
+#### GET `/stores/{storeID}`
 
 Retrieves information about a specific store.
+
+**Production URL**: `https://uat-teststore.vercel.app/v1/stores/{storeID}`
 
 **Parameters:**
 
@@ -53,9 +119,11 @@ Retrieves information about a specific store.
 
 ### Item Management
 
-#### POST `/v1/{storeID}/postitem`
+#### POST `/{storeID}/postitem`
 
 Adds an item to a specific store.
+
+**Production URL**: `https://uat-teststore.vercel.app/v1/{storeID}/postitem`
 
 **Parameters:**
 
@@ -100,9 +168,11 @@ Adds an item to a specific store.
 }
 ```
 
-#### GET `/v1/stores/{storeID}/items`
+#### GET `/stores/{storeID}/items`
 
 Retrieves all items in a specific store.
+
+**Production URL**: `https://uat-teststore.vercel.app/v1/stores/{storeID}/items`
 
 **Parameters:**
 
@@ -127,9 +197,11 @@ Retrieves all items in a specific store.
 ]
 ```
 
-#### DELETE `/v1/stores/{storeID}/items/{itemCode}`
+#### DELETE `/stores/{storeID}/items/{itemCode}`
 
 Removes a specific item from a store.
+
+**Production URL**: `https://uat-teststore.vercel.app/v1/stores/{storeID}/items/{itemCode}`
 
 **Parameters:**
 
@@ -154,16 +226,17 @@ The API uses standardized error codes and response formats:
 
 ### HTTP Status Codes
 
-| Status | Code | Description               |
-| ------ | ---- | ------------------------- |
-| 200    | -    | Success (GET requests)    |
-| 201    | -    | Item created successfully |
-| 204    | -    | Item deleted successfully |
-| 400    | 04XY | Malformed request         |
-| 404    | 44XY | Resource not found        |
-| 405    | 45XY | Method not allowed        |
-| 500    | 50XY | Internal server error     |
-| 503    | 53QW | Duplicate request ID      |
+| Status | Code | Description                   |
+| ------ | ---- | ----------------------------- |
+| 200    | -    | Success (GET requests)        |
+| 201    | -    | Resource created successfully |
+| 204    | -    | Resource deleted successfully |
+| 400    | 04XY | Malformed request             |
+| 404    | 44XY | Resource not found            |
+| 405    | 45XY | Method not allowed            |
+| 409    | 49XY | Resource already exists       |
+| 500    | 50XY | Internal server error         |
+| 503    | 53QW | Duplicate request ID          |
 
 ## 🛠️ Installation & Setup
 
@@ -205,7 +278,7 @@ Ensure your Supabase project has the following tables:
 ```sql
 CREATE TABLE test_store_stores (
   id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
+  name TEXT NOT NULL UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
@@ -270,62 +343,49 @@ The complete OpenAPI V3 specification is available in `openapi.yaml`. This file 
 
 ### Interactive Documentation
 
-To enable Swagger UI for interactive API testing:
+**Live Swagger UI**: https://uat-teststore.vercel.app/api-docs
 
-1. Install additional dependencies:
+This provides an interactive interface to:
 
-```bash
-npm install swagger-ui-express @types/swagger-ui-express js-yaml @types/js-yaml
-```
-
-2. Update `src/app.ts` to include Swagger UI:
-
-```typescript
-import swaggerUi from "swagger-ui-express";
-import * as fs from "fs";
-import * as yaml from "js-yaml";
-
-// Load OpenAPI specification
-const openApiSpec = yaml.load(fs.readFileSync("./openapi.yaml", "utf8"));
-
-// Serve Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec as any));
-```
-
-3. Access the interactive documentation at:
-
-```
-http://localhost:3000/api-docs
-```
+- View all available endpoints
+- Test API calls directly from the browser
+- See request/response schemas
+- Try different parameters and request bodies
 
 ## 🧪 Testing
 
-### Manual Testing
+### Live API Testing
 
-You can test the API using:
+The API is live and ready for testing! Use these production URLs:
 
-- **cURL**: Command-line HTTP client
-- **Postman**: API development environment
-- **Swagger UI**: Interactive documentation (if enabled)
+### Example cURL Commands (Production)
 
-### Example cURL Commands
+#### Create a new store
+
+```bash
+curl -X POST https://uat-teststore.vercel.app/v1/stores/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Fashion Store"
+  }'
+```
 
 #### Get all stores
 
 ```bash
-curl -X GET http://localhost:3000/v1/stores/all
+curl -X GET https://uat-teststore.vercel.app/v1/stores/all
 ```
 
 #### Get specific store
 
 ```bash
-curl -X GET http://localhost:3000/v1/stores/store1
+curl -X GET https://uat-teststore.vercel.app/v1/stores/store1
 ```
 
 #### Add item to store
 
 ```bash
-curl -X POST http://localhost:3000/v1/store1/postitem \
+curl -X POST https://uat-teststore.vercel.app/v1/store1/postitem \
   -H "Content-Type: application/json" \
   -d '{
     "requestId": "test123",
@@ -342,24 +402,22 @@ curl -X POST http://localhost:3000/v1/store1/postitem \
 #### Get items from store
 
 ```bash
-curl -X GET http://localhost:3000/v1/stores/store1/items
+curl -X GET https://uat-teststore.vercel.app/v1/stores/store1/items
 ```
 
 #### Delete item
 
 ```bash
-curl -X DELETE http://localhost:3000/v1/stores/store1/items/item123
+curl -X DELETE https://uat-teststore.vercel.app/v1/stores/store1/items/item123
 ```
 
-## 📄 License
+### Manual Testing
 
-This project is licensed under the ISC License.
+You can test the API using:
 
-## 🆘 Support
-
-For support and questions:
-
-- Create an issue in the repository
+- **cURL**: Command-line HTTP client
+- **Postman**: API development environment
+- **Swagger UI**: Interactive documentation at https://uat-teststore.vercel.app/api-docs
 
 ## 🔒 Security Features
 
@@ -367,18 +425,31 @@ For support and questions:
 - **Input Validation**: Comprehensive validation using Zod schemas
 - **Error Sanitization**: Safe error messages without exposing internal details
 - **Database Security**: Supabase Row Level Security (RLS) support
+- **Duplicate Prevention**: Prevents stores with the same name
+- **HTTPS**: All production endpoints use secure HTTPS
 
 ## 🚀 Deployment
 
+### Production Deployment
+
+The API is deployed on **Vercel** with the following features:
+
+- **Automatic Scaling**: Handles traffic spikes automatically
+- **Global CDN**: Fast response times worldwide
+- **HTTPS**: Secure connections by default
+- **Auto-deployment**: Updates on every git push
+
 ### Environment Variables
 
-Ensure all required environment variables are set in your production environment:
+The production environment has all required environment variables configured:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
-- `PORT` (optional, defaults to 3000)
+- `PORT` (automatically set by Vercel)
 
-### Build and Deploy
+### Local Development
+
+For local development:
 
 ```bash
 npm run build
@@ -402,3 +473,27 @@ This project is licensed under the ISC License.
 For support and questions:
 
 - Create an issue in the repository
+- Contact: leorodwel86@gmail.com
+- **Live API Status**: https://uat-teststore.vercel.app (health check)
+
+## 📋 Project Structure
+
+```
+api-integration-engineer-test/
+├── src/
+│   ├── app.ts                 # Main application entry point
+│   ├── routes/
+│   │   └── StoreRoute.ts      # API route definitions
+│   ├── services/
+│   │   ├── StoreService.ts    # Business logic for stores
+│   │   └── LogService.ts      # Request logging service
+│   └── utils/
+│       ├── schemas.ts         # Zod validation schemas
+│       ├── types.ts           # TypeScript type definitions
+│       ├── helpers.ts         # Utility functions
+│       └── supabase.ts        # Supabase client configuration
+├── openapi.yaml              # OpenAPI V3 specification
+├── package.json              # Project dependencies and scripts
+├── tsconfig.json            # TypeScript configuration
+└── README.md                # This file
+```

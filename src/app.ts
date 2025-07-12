@@ -3,6 +3,8 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import StoreRoute from "./routes/StoreRoute";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
 dotenv.config({ path: envFile });
@@ -25,7 +27,9 @@ app.use(
   })
 );
 
-app.use("/openapi.yaml", express.static("./openapi.yaml"));
+app.get("/openapi.yaml", (req, res) => {
+  res.sendFile(path.resolve("openapi.yaml"));
+});
 
 app.get("/", (req, res) => {
   res.status(200).json("The test store endpoint is live");

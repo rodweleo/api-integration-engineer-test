@@ -1,6 +1,12 @@
 import { PostgrestError } from "@supabase/supabase-js";
 import { supabaseClient } from "../utils/supabase";
-import { PostItemRequest, ProductItem, Store, StoreItem } from "../utils/types";
+import {
+  PostItemRequest,
+  ProductItem,
+  Store,
+  StoreItem,
+  CreateStoreRequest,
+} from "../utils/types";
 
 class StoreService {
   constructor() {}
@@ -47,6 +53,66 @@ class StoreService {
 
     return {
       data,
+      error: null,
+    };
+  }
+
+  public async createStore(storeData: CreateStoreRequest): Promise<{
+    data: {
+      storeId: string;
+      message: string;
+    } | null;
+    error: PostgrestError | null;
+  }> {
+    // Check if store with same name already exists
+    const { data: existingStore, error: checkError } = await supabaseClient
+      .from("test_store_stores")
+      .select("id")
+      .eq("name", storeData.name)
+      .single();
+
+    if (checkError && checkError.code !== "PGRST116") {
+      return {
+        data: null,
+        error: checkError,
+      };
+    }
+
+    if (existingStore) {
+      return {
+        data: null,
+        error: {
+          message: "Store with this name already exists",
+          details: "A store with the same name already exists in the system",
+          hint: "Please use a different store name",
+          code: "23505",
+        } as PostgrestError,
+      };
+    }
+
+    const { data, error } = await supabaseClient
+      .from("test_store_stores")
+      .insert({
+        name: storeData.name,
+      })
+      .select("id");
+
+    if (error) {
+      return {
+        data: null,
+        error,
+      };
+    }
+
+    if (!data || data.length === 0) {
+      return { data: null, error };
+    }
+
+    return {
+      data: {
+        storeId: data[0].id,
+        message: "Store created successfully",
+      },
       error: null,
     };
   }

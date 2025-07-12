@@ -1,5 +1,5 @@
 import express from "express";
-import { itemSchema } from "../utils/schemas";
+import { itemSchema, createStoreSchema } from "../utils/schemas";
 import { generateRequestId } from "../utils/helpers";
 import { StoreService } from "../services";
 import { supabaseClient } from "../utils/supabase";
@@ -8,6 +8,69 @@ import LogService from "../services/LogService";
 const StoreRoute = express.Router();
 const storeService = new StoreService();
 const logService = new LogService();
+
+// Create a new store
+StoreRoute.post("/stores/create", async (req, res) => {
+  const requestId = generateRequestId();
+
+  // Validate the inputs using zod
+  const { error } = createStoreSchema.safeParse(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      requestId,
+      errorCode: "04XY",
+      Description: error.message,
+    });
+  }
+
+  try {
+    const { data, error } = await storeService.createStore(req.body);
+
+    if (error) {
+      if (error.code === "23505" || error.message?.includes("already exists")) {
+        return res.status(409).json({
+          requestId,
+          errorCode: "49XY",
+          Description: "Store with this name already exists",
+        });
+      }
+
+      return res.status(500).json({
+        requestId,
+        errorCode: "50XY",
+        Description: error.message || "Failed to create store",
+      });
+    }
+
+    if (!data) {
+      return res.status(500).json({
+        requestId,
+        errorCode: "50XY",
+        Description: "Failed to create store",
+      });
+    }
+
+    // Log the processed request
+    await logService.logProcessedRequest({
+      requestId,
+      requestData: req.body,
+      responseData: data,
+    });
+
+    return res.status(201).json({
+      requestId,
+      storeId: data.storeId,
+      Description: data.message,
+    });
+  } catch (e: any) {
+    return res.status(500).json({
+      requestId: requestId,
+      errorCode: "50XY",
+      Description: e.message || "Internal server error",
+    });
+  }
+});
 
 // Get all stores
 StoreRoute.get("/stores/all", async (req, res) => {

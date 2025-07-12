@@ -14,6 +14,61 @@ servers:
     description: Development server
 
 paths:
+  /stores:
+    post:
+      summary: Create a new store
+      description: Creates a new store in the system
+      operationId: createStore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStoreRequest"
+            example:
+              name: "Fashion Store"
+      responses:
+        "201":
+          description: Store created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateStoreResponse"
+              example:
+                requestId: "store123"
+                storeId: "store_1703123456789_abc123def"
+                Description: "Store created successfully"
+        "400":
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "store123"
+                errorCode: "04XY"
+                Description: "Store name is required"
+        "409":
+          description: Store name already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "store123"
+                errorCode: "49XY"
+                Description: "Store with this name already exists"
+        "503":
+          description: Duplicate request ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                requestId: "store123"
+                errorCode: "53QW"
+                Description: "duplicate requestID"
+
   /stores/all:
     get:
       summary: Get all stores
@@ -228,6 +283,35 @@ paths:
 
 components:
   schemas:
+    CreateStoreRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the store
+          minLength: 1
+          maxLength: 100
+          example: "Fashion Store"
+
+    CreateStoreResponse:
+      type: object
+      required:
+        - requestId
+        - storeId
+        - Description
+      properties:
+        requestId:
+          type: string
+          description: Uniquely identifies each API request
+        storeId:
+          type: string
+          description: Unique identifier for the created store
+        Description:
+          type: string
+          description: An explanation of operation
+
     Store:
       type: object
       required:
