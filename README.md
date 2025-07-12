@@ -7,7 +7,6 @@ A comprehensive REST API for managing store items and stores, built with Node.js
 **The API is now live and ready for use!**
 
 - **Production API**: https://uat-teststore.vercel.app/v1/{endpoint}
-- **Interactive Documentation**: https://uat-teststore.vercel.app/api-docs
 
 ### Quick Start
 
@@ -341,17 +340,6 @@ The complete OpenAPI V3 specification is available in `openapi.yaml`. This file 
 - Example requests and responses
 - Error code definitions
 
-### Interactive Documentation
-
-**Live Swagger UI**: https://uat-teststore.vercel.app/api-docs
-
-This provides an interactive interface to:
-
-- View all available endpoints
-- Test API calls directly from the browser
-- See request/response schemas
-- Try different parameters and request bodies
-
 ## 🧪 Testing
 
 ### Live API Testing
@@ -417,7 +405,6 @@ You can test the API using:
 
 - **cURL**: Command-line HTTP client
 - **Postman**: API development environment
-- **Swagger UI**: Interactive documentation at https://uat-teststore.vercel.app/api-docs
 
 ## 🔒 Security Features
 
