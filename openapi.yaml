@@ -8,7 +8,7 @@ info:
     email: leorodwel86@gmail.com
 
 servers:
-  - url: https://teststore.com/v1
+  - url: https://uat-teststore.vercel.app/v1
     description: Production server
   - url: http://localhost:3000/v1
     description: Development server

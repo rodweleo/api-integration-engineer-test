@@ -17,7 +17,7 @@ A comprehensive REST API for managing store items and stores, built with Node.js
 
 ### Store Management
 
-#### GET `/v3/stores/all`
+#### GET `/v1/stores/all`
 
 Retrieves a list of all available stores.
 
@@ -33,7 +33,7 @@ Retrieves a list of all available stores.
 ]
 ```
 
-#### GET `/v3/stores/{storeID}`
+#### GET `/v1/stores/{storeID}`
 
 Retrieves information about a specific store.
 
@@ -53,7 +53,7 @@ Retrieves information about a specific store.
 
 ### Item Management
 
-#### POST `/v3/{storeID}/postitem`
+#### POST `/v1/{storeID}/postitem`
 
 Adds an item to a specific store.
 
@@ -100,7 +100,7 @@ Adds an item to a specific store.
 }
 ```
 
-#### GET `/v3/stores/{storeID}/items`
+#### GET `/v1/stores/{storeID}/items`
 
 Retrieves all items in a specific store.
 
@@ -127,7 +127,7 @@ Retrieves all items in a specific store.
 ]
 ```
 
-#### DELETE `/v3/stores/{storeID}/items/{itemCode}`
+#### DELETE `/v1/stores/{storeID}/items/{itemCode}`
 
 Removes a specific item from a store.
 
@@ -313,19 +313,19 @@ You can test the API using:
 #### Get all stores
 
 ```bash
-curl -X GET http://localhost:3000/v3/stores/all
+curl -X GET http://localhost:3000/v1/stores/all
 ```
 
 #### Get specific store
 
 ```bash
-curl -X GET http://localhost:3000/v3/stores/store1
+curl -X GET http://localhost:3000/v1/stores/store1
 ```
 
 #### Add item to store
 
 ```bash
-curl -X POST http://localhost:3000/v3/store1/postitem \
+curl -X POST http://localhost:3000/v1/store1/postitem \
   -H "Content-Type: application/json" \
   -d '{
     "requestId": "test123",
@@ -342,13 +342,13 @@ curl -X POST http://localhost:3000/v3/store1/postitem \
 #### Get items from store
 
 ```bash
-curl -X GET http://localhost:3000/v3/stores/store1/items
+curl -X GET http://localhost:3000/v1/stores/store1/items
 ```
 
 #### Delete item
 
 ```bash
-curl -X DELETE http://localhost:3000/v3/stores/store1/items/item123
+curl -X DELETE http://localhost:3000/v1/stores/store1/items/item123
 ```
 
 ## 📄 License

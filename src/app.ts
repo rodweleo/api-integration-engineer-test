@@ -27,6 +27,10 @@ app.use(
 
 app.use("/openapi.yaml", express.static("./openapi.yaml"));
 
+app.get("/", (req, res) => {
+  res.status(200).json("The test store endpoint is live");
+});
+
 // API routes
 app.use("/v1", StoreRoute);
 
